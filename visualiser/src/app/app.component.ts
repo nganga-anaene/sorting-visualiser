@@ -77,6 +77,9 @@ export class AppComponent implements OnInit {
       case SortingAlgorithm.BUBBLE_SORT:
         this.bubbleSort();
         break;
+      case SortingAlgorithm.INSERTION_SORT:
+        this.insertionSort();
+        break;
       case SortingAlgorithm.QUICK_SORT:
         this.setQuickSort();
         break;
@@ -116,6 +119,7 @@ export class AppComponent implements OnInit {
         this.clearIndex(i - 1);
         this.paintIndexes(i - 1, i - 2, 'red');
       }
+
       if (i == len) {
         if (swapped) {
           swapped = false;
@@ -144,9 +148,43 @@ export class AppComponent implements OnInit {
   }
   /*bubble sort end */
 
+  /**insertion sort start */
+
+  insertionSort() {
+    this.sorting = true;
+    let index = 1;
+    let nextPos = 2;
+
+    this.animate = setInterval(() => {
+
+      this.clearIndex(index);
+      this.clearIndex(index + 1);
+      this.paintIndexes(index, index + 1, 'red');
+
+      if (nextPos == this.items.length && this.items[index] >= this.items[index - 1]) {
+        clearInterval(this.animate);
+      }
+
+      if (this.items[index - 1] > this.items[index]) {
+        this.paintIndexes(index, index - 1, 'blue');
+        this.swapItems(index, index - 1);
+        index--;
+      } else {
+        index = nextPos;
+        nextPos++;
+      }
+
+    }, this.animationTime);
+  }
+
+  setInsertionSort() {
+    this.sortingAlgorithm = SortingAlgorithm.INSERTION_SORT;
+    this.algorithmTitle = 'Insertion Sort';
+  }
+  /**insertion sort end */
 
   /* quick sort start*/
-  
+
   setQuickSort() {
     this.sortingAlgorithm = SortingAlgorithm.QUICK_SORT;
     this.algorithmTitle = 'Quick Sort';
@@ -157,5 +195,6 @@ export class AppComponent implements OnInit {
 export enum SortingAlgorithm {
   BUBBLE_SORT,
   QUICK_SORT,
-  MERGE_SORT
+  MERGE_SORT,
+  INSERTION_SORT
 }
