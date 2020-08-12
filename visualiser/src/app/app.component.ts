@@ -16,7 +16,7 @@ export class AppComponent implements OnInit {
   private ctx: CanvasRenderingContext2D;
 
   private items = []
-  private sorting: boolean = false;
+  sorting: boolean = false;
 
   //setinterval variable
   private animate;
@@ -24,7 +24,7 @@ export class AppComponent implements OnInit {
   private sortingAlgorithm: SortingAlgorithm;
 
   //heading title, changes when button for algorithm clicked
-  private algorithmTitle: string;
+  algorithmTitle: string;
 
   ngOnInit(): void {
     this.ctx = this.canvas.nativeElement.getContext('2d');
