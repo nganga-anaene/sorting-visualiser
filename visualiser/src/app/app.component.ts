@@ -10,7 +10,7 @@ export class AppComponent implements OnInit {
   @ViewChild('canvas', { read: ElementRef, static: true })
   private canvas: ElementRef<HTMLCanvasElement>;
 
-  @ViewChild('speedController', { static: false })
+  @ViewChild('speedController', { static: true })
   private speedController: ElementRef<HTMLInputElement>;
 
   private ctx: CanvasRenderingContext2D;
@@ -20,7 +20,7 @@ export class AppComponent implements OnInit {
 
   //setinterval variable
   private animate;
-  private animationTime = 100;
+  private animationTime = 50;
   private sortingAlgorithm: SortingAlgorithm;
 
   //heading title, changes when button for algorithm clicked
@@ -81,7 +81,7 @@ export class AppComponent implements OnInit {
         this.insertionSort();
         break;
       case SortingAlgorithm.QUICK_SORT:
-        this.setQuickSort();
+        this.quickSort();
         break;
       default:
         this.bubbleSort();
@@ -92,7 +92,8 @@ export class AppComponent implements OnInit {
     try {
       let temp = parseInt(this.speedController.nativeElement.value);
       this.animationTime = temp;
-    } catch (err) { }
+    } catch (err) {
+    }
   }
 
   reset() {
@@ -143,6 +144,7 @@ export class AppComponent implements OnInit {
   }
 
   setBubbleSort() {
+    this.reset();
     this.sortingAlgorithm = SortingAlgorithm.BUBBLE_SORT;
     this.algorithmTitle = 'Bubble Sort';
   }
@@ -178,18 +180,74 @@ export class AppComponent implements OnInit {
   }
 
   setInsertionSort() {
+    this.reset();
     this.sortingAlgorithm = SortingAlgorithm.INSERTION_SORT;
     this.algorithmTitle = 'Insertion Sort';
   }
   /**insertion sort end */
 
   /* quick sort start*/
+  quickSort() {
+    let pivot = this.items.length - 1;
+    let high = this.items.length - 2;
+    let low = 0;
+    this.sorting = true;
+    this.processQuickSort(low, high, pivot);
+  }
+
+  processQuickSort(low: number, high: number, pivot: number) {
+    let processAnimation = setInterval(() => {
+
+      this.clearIndex(high);
+      this.clearIndex(low);
+      this.clearIndex(pivot);
+      this.paintIndexes(low, high, 'red');
+      this.ctx.fillStyle = 'green';
+      this.fillIndex(pivot);
+
+      for (low; low < high; low++) {
+        if (this.items[low] > this.items[pivot]) {
+          break;
+        }
+      }
+
+      for (high; high > low; high--) {
+        if (this.items[high] <= this.items[pivot]) {
+          break;
+        }
+      }
+
+      if (this.items[low] > this.items[high]) {
+        this.paintIndexes(low, high, 'blue');
+        this.swapItems(low, high);
+      }
+
+      if (low == high) {
+        clearInterval(processAnimation);
+        this.clearIndex(low);
+        this.clearIndex(pivot);
+        this.swapItems(low, pivot);
+        this.paintIndexes(low, pivot, 'green');
+
+        let temp = this.items.slice(high + 1, this.items.length);
+        if (temp.length > 0) {
+          this.processQuickSort(high + 1, pivot - 1, pivot);
+        }
+        temp = this.items.slice(0, low -1);
+      }
+    }, this.animationTime);
+  }
 
   setQuickSort() {
+    this.reset();
     this.sortingAlgorithm = SortingAlgorithm.QUICK_SORT;
-    this.algorithmTitle = 'Quick Sort';
+    this.algorithmTitle = 'Quicksort';
   }
   /* quick sort end*/
+
+  getAnimateTime() {
+    return this.animationTime;
+  }
 }
 
 export enum SortingAlgorithm {
@@ -198,3 +256,4 @@ export enum SortingAlgorithm {
   MERGE_SORT,
   INSERTION_SORT
 }
+

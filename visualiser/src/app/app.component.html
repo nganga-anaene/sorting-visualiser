@@ -9,13 +9,13 @@
         <div class="btn-group col-10 offset-1">
             <button class="btn btn-dark mr-1" (click)="setBubbleSort()">Bubble Sort</button>
             <button class="btn btn-dark mr-1" (click)="setInsertionSort()">Insertion Sort</button>
-            <button class="btn btn-dark mr-1" (click)="setQuickSort()">Quick Sort</button>
+            <button class="btn btn-dark mr-1" (click)="setQuickSort()">Quicksort</button>
             <button class="btn btn-dark mr-1">Merge Sort</button>
         </div>
     </div>
     <div class="row mt-3 text-center">
         <div class="btn-group col-4 offset-4">
-            <input type="number" class="mr-2 form-control col-4" placeholder="Speed (ms)" #speedController>
+            <input type="number" class="mr-2 form-control col-4" placeholder="Speed (ms)" #speedController [value]="getAnimateTime()">
             <button (click)='playAnimation()' class="btn btn-primary mr-2" [disabled]="sorting">Start Sort</button>
             <button (click)="reset()" class="btn btn-danger" [disabled]="!sorting">Reset</button>
         </div>
