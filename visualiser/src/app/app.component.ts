@@ -21,6 +21,7 @@ export class AppComponent implements OnInit {
   //setinterval variable
   private animate;
   private animationTime = 50;
+  private animationList = [];
   private sortingAlgorithm: SortingAlgorithm;
 
   //heading title, changes when button for algorithm clicked
@@ -58,7 +59,7 @@ export class AppComponent implements OnInit {
   }
 
   fillIndex(index: number) {
-    this.ctx.fillRect(index * 5 + 1, 600, 4, -3 * this.items[index]);
+    this.ctx.fillRect(index * 5 + 1, this.ctx.canvas.height, 4, -2.5 * this.items[index]);
   }
 
   paintIndexes(index1: number, index2: number, color: string) {
@@ -68,7 +69,7 @@ export class AppComponent implements OnInit {
   }
 
   clearIndex(index: number) {
-    this.ctx.clearRect(index * 5, 600, 5, -600);
+    this.ctx.clearRect(index * 5, this.ctx.canvas.height, 5, -this.ctx.canvas.height);
   }
 
   playAnimation() {
@@ -81,7 +82,7 @@ export class AppComponent implements OnInit {
         this.insertionSort();
         break;
       case SortingAlgorithm.QUICK_SORT:
-        this.quickSort();
+        this.quicksort();
         break;
       default:
         this.bubbleSort();
@@ -98,6 +99,9 @@ export class AppComponent implements OnInit {
 
   reset() {
     clearInterval(this.animate);
+    for (let i = 0; i < this.animationList.length; i++) {
+      clearInterval(this.animationList[i]);
+    }
     this.setCanvas();
   }
 
@@ -187,58 +191,66 @@ export class AppComponent implements OnInit {
   /**insertion sort end */
 
   /* quick sort start*/
-  quickSort() {
-    let pivot = this.items.length - 1;
-    let high = this.items.length - 2;
-    let low = 0;
-    this.sorting = true;
-    this.processQuickSort(low, high, pivot);
+  quicksort() {
+    this.processQuicksort(0, this.items.length - 1);
   }
 
-  processQuickSort(low: number, high: number, pivot: number) {
-    let processAnimation = setInterval(() => {
-
-      this.clearIndex(high);
-      this.clearIndex(low);
-      this.clearIndex(pivot);
-      this.paintIndexes(low, high, 'red');
-      this.ctx.fillStyle = 'green';
-      this.fillIndex(pivot);
-
-      for (low; low < high; low++) {
-        if (this.items[low] > this.items[pivot]) {
-          break;
-        }
-      }
-
-      for (high; high > low; high--) {
-        if (this.items[high] <= this.items[pivot]) {
-          break;
-        }
-      }
-
-      if (this.items[low] > this.items[high]) {
-        this.paintIndexes(low, high, 'blue');
-        this.swapItems(low, high);
-      }
-
-      if (low == high) {
-        clearInterval(processAnimation);
+  processQuicksort(start: number, end: number) {
+    if (end - start > 1) {
+      let low = start;
+      let pivot = end;
+      let high = pivot - 1;
+      let animation = setInterval(() => {
         this.clearIndex(low);
-        this.clearIndex(pivot);
-        this.swapItems(low, pivot);
-        this.paintIndexes(low, pivot, 'green');
+        this.clearIndex(high);
+        this.paintIndexes(low, high, 'red');
+        this.ctx.fillStyle = 'green';
+        this.fillIndex(pivot);
 
-        let temp = this.items.slice(high + 1, this.items.length);
-        if (temp.length > 0) {
-          this.processQuickSort(high + 1, pivot - 1, pivot);
+        for (low; this.items[low] <= this.items[pivot] && low < high;) {
+          low++;
         }
-        temp = this.items.slice(0, low -1);
+
+        for (high; this.items[high] > this.items[pivot] && low < high;) {
+          high--;
+        }
+
+        if (low == high) {
+          clearInterval(animation);
+          this.paintIndexes(pivot, high, 'green');
+          this.swapItems(pivot, high);
+          setTimeout(() => {
+            this.clearIndex(pivot);
+            this.clearIndex(high);
+            this.paintIndexes(pivot, high, 'red');
+            if (low > start) {
+              this.processQuicksort(start, low);
+            }
+            if (high < end) {
+              this.processQuicksort(high, end);
+            }
+          }, this.animationTime);
+        } else if (this.items[low] > this.items[high]) {
+          this.paintIndexes(low, high, 'blue');
+          this.swapItems(low, high);
+        }
+      }, this.animationTime);
+
+      this.animationList.push(animation);
+    } else {
+      if (this.items[start] > this.items[end]) {
+        this.paintIndexes(start, end, 'blue');
+        this.swapItems(start, end);
+        setTimeout(() => {
+          this.clearIndex(start);
+          this.clearIndex(end);
+          this.paintIndexes(start, end, 'red');
+        }, this.animationTime);
       }
-    }, this.animationTime);
+    }
   }
 
-  setQuickSort() {
+  setQuicksort() {
     this.reset();
     this.sortingAlgorithm = SortingAlgorithm.QUICK_SORT;
     this.algorithmTitle = 'Quicksort';
