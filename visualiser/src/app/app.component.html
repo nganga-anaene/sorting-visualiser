@@ -6,18 +6,19 @@
         <canvas #canvas width="1000" height="500" id="canvas"></canvas>
     </div>
     <div class="row mt-2 text-center">
-        <div class="btn-group col-10 offset-1">
+        <div class="btn-group col-8 offset-2">
             <button class="btn btn-dark mr-1" (click)="setBubbleSort()">Bubble Sort</button>
             <button class="btn btn-dark mr-1" (click)="setInsertionSort()">Insertion Sort</button>
             <button class="btn btn-dark mr-1" (click)="setQuicksort()">Quicksort</button>
-            <button class="btn btn-dark mr-1">Merge Sort</button>
+            <button class="btn btn-dark mr-1" (click)="setMergeSort()">Merge Sort</button>
         </div>
     </div>
     <div class="row mt-3 text-center">
         <div class="btn-group col-4 offset-4">
-            <input type="number" class="mr-2 form-control col-4" placeholder="Speed (ms)" #speedController [value]="getAnimateTime()">
+            <input type="number" class="mr-2 form-control col-4" placeholder="Speed (ms)" #speedController
+                [value]="getAnimateTime()">
             <button (click)='playAnimation()' class="btn btn-primary mr-2" [disabled]="sorting">Start Sort</button>
-            <button (click)="reset()" class="btn btn-danger" [disabled]="!sorting">Reset</button>
+            <button (click)="reset()" class="btn btn-danger" [disabled]="!resetArray">Reset</button>
         </div>
 
     </div>

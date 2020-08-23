@@ -1,4 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Observable, interval, combineLatest } from 'rxjs';
+import { takeUntil } from 'rxjs/operators'
 
 @Component({
   selector: 'app-root',
@@ -17,6 +19,7 @@ export class AppComponent implements OnInit {
 
   private items = []
   sorting: boolean = false;
+  resetArray: boolean = false;
 
   //setinterval variable
   private animate;
@@ -68,6 +71,28 @@ export class AppComponent implements OnInit {
     this.fillIndex(index2);
   }
 
+  paintRange(start: number, end: number, color: string) {
+    this.ctx.fillStyle = color;
+    for (start; start < end; start++) {
+      this.clearIndex(start);
+      this.fillIndex(start);
+    }
+  }
+
+  paintIndex(index: number, color: string) {
+    this.ctx.fillStyle = color;
+    this.clearIndex(index);
+    this.fillIndex(index);
+  }
+
+  paintCanvas() {
+    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
+    this.ctx.fillStyle = 'red';
+    for (let i = 0; i < this.items.length; i++) {
+      this.fillIndex(i);
+    }
+  }
+
   clearIndex(index: number) {
     this.ctx.clearRect(index * 5, this.ctx.canvas.height, 5, -this.ctx.canvas.height);
   }
@@ -83,6 +108,9 @@ export class AppComponent implements OnInit {
         break;
       case SortingAlgorithm.QUICK_SORT:
         this.quicksort();
+        break;
+      case SortingAlgorithm.MERGE_SORT:
+        this.mergeSort();
         break;
       default:
         this.bubbleSort();
@@ -102,6 +130,7 @@ export class AppComponent implements OnInit {
     for (let i = 0; i < this.animationList.length; i++) {
       clearInterval(this.animationList[i]);
     }
+    this.resetArray = false;
     this.setCanvas();
   }
 
@@ -114,6 +143,7 @@ export class AppComponent implements OnInit {
   /*bubble sort start */
   bubbleSort() {
     this.sorting = true;
+    this.resetArray = true;
     let len = this.items.length;
     let i = 1;
     let swapped = false;
@@ -158,6 +188,8 @@ export class AppComponent implements OnInit {
 
   insertionSort() {
     this.sorting = true;
+    this.resetArray = true;
+
     let index = 1;
     let nextPos = 2;
 
@@ -192,6 +224,8 @@ export class AppComponent implements OnInit {
 
   /* quick sort start*/
   quicksort() {
+    this.sorting = true;
+    this.resetArray = true;
     this.processQuicksort(0, this.items.length - 1);
   }
 
@@ -256,6 +290,89 @@ export class AppComponent implements OnInit {
     this.algorithmTitle = 'Quicksort';
   }
   /* quick sort end*/
+
+  // mergesort start
+  mergeSort() {
+    this.sorting = true;
+    this.resetArray = false;
+    let merge = this.mergeSortDivide(this.items, 0).subscribe(val => {
+      this.resetArray = true;
+      merge.unsubscribe();
+    });
+  }
+
+  mergeSortDivide(arr: number[], canvasIndex: number): Observable<number[]> {
+    return Observable.create(observer => {
+      if (arr.length > 1) {
+        let splitIndex = Math.floor(arr.length / 2);
+        let leftArr = arr.slice(0, splitIndex);
+        let rightArr = arr.slice(splitIndex, arr.length);
+        let leftDivide = this.mergeSortDivide(leftArr, canvasIndex);
+        let rightDivide = this.mergeSortDivide(rightArr, splitIndex);
+
+        let combine = combineLatest(leftDivide, rightDivide).subscribe(([la, ra]) => {
+          let merge = this.mergeSortMerge(la, ra, canvasIndex).subscribe(val => {
+            this.mergeSwap(val, canvasIndex);
+            this.paintRange(canvasIndex, val.length, 'red');
+            observer.next(val);
+            combine.unsubscribe();
+            merge.unsubscribe();
+          })
+        });
+      } else {
+        observer.next(arr);
+      }
+    });
+  }
+
+  mergeSortMerge(leftArr: number[], rightArr: number[], canvasIndex: number): Observable<number[]> {
+    //position of end index of the two arrays  refrenced to original array
+    let endIndex = canvasIndex + leftArr.length + rightArr.length;
+    let leftIndex = 0;
+    let rightIndex = 0;
+    let temp: number[] = [];
+    this.paintRange(canvasIndex, endIndex, 'blue');
+    return Observable.create(observer => {
+      let timer = interval(this.animationTime).subscribe(val => {
+        
+        if (leftIndex < leftArr.length && rightIndex < rightArr.length) {
+          if (leftArr[leftIndex] < rightArr[rightIndex]) {
+            temp.push(leftArr[leftIndex]);
+            this.paintIndex(canvasIndex + leftIndex, 'green');
+            leftIndex++;
+          } else {
+            temp.push(rightArr[rightIndex]);
+            this.paintIndex(canvasIndex + rightIndex + leftArr.length, 'green');
+            rightIndex++;
+          }
+        } else if (leftIndex < leftArr.length) {
+          temp.push(leftArr[leftIndex]);
+          this.paintIndex(canvasIndex + leftIndex, 'green');
+          leftIndex++;
+        } else if (rightIndex < rightArr.length) {
+          temp.push(rightArr[rightIndex]);
+          this.paintIndex(canvasIndex + rightIndex + leftArr.length, 'green');
+          rightIndex++;
+        } else {
+          observer.next(temp);
+          timer.unsubscribe();
+        }
+      });
+    });
+  }
+
+  mergeSwap(arr: number[], canvasIndex) {
+    for (let i = 0; i < arr.length; i++) {
+      this.items[canvasIndex + i] = arr[i]
+    }
+  }
+
+  setMergeSort() {
+    this.reset();
+    this.sortingAlgorithm = SortingAlgorithm.MERGE_SORT;
+    this.algorithmTitle = 'Merge Sort';
+  }
+  // mergesort end
 
   getAnimateTime() {
     return this.animationTime;
